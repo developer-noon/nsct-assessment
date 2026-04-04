@@ -316,21 +316,28 @@
       ];
 
       async function startIndustrialExam() {
-        // 1. Try to get key from input, if empty, check browser memory (localStorage)
+        // 1. This placeholder is swapped by Render during deployment
+        const envKey = "REPLACE_WITH_GEMINI_KEY";
+
+        // 2. Resolve the key (Priority: Input > Environment > LocalStorage)
         let apiKey = document.getElementById("api-key").value;
+
+        if (!apiKey && envKey !== "REPLACE_WITH_GEMINI_KEY" && envKey !== "") {
+          apiKey = envKey;
+        }
 
         if (!apiKey) {
           apiKey = localStorage.getItem("nsct_api_key");
         }
 
-        // 2. If still no key, alert the user
+        // 3. Validation
         if (!apiKey) {
           return alert(
-            "System requires Authentication Key. Please enter it once to save it.",
+            "System requires Authentication Key. Please enter it or configure Render Environment.",
           );
         }
 
-        // 3. Save the key for next time so you never have to type it again
+        // 4. Persistence for future sessions
         localStorage.setItem("nsct_api_key", apiKey);
 
         // Proceed with UI changes
