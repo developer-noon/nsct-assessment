@@ -6,9 +6,10 @@
     <title>NSCT Industrial Skill Assessment v7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      #setup-screen .space-y-6 > div:first-child {
-  display: none; 
-}
+      /* Change your existing #setup-screen rule or add this */
+      #setup-screen {
+        display: none;
+      }
       @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap");
       body {
         font-family: "Plus Jakarta Sans", sans-serif;
@@ -319,34 +320,28 @@
       ];
 
       async function startIndustrialExam() {
-        // 1. This placeholder is swapped by Render during deployment
-        const envKey = "REPLACE_WITH_GEMINI_KEY";
+        // 1. The key is already injected here by your Vercel Build Command
+        const apiKey = "REPLACE_WITH_GEMINI_KEY";
 
-        // 2. Resolve the key (Priority: Input > Environment > LocalStorage)
-        let apiKey = document.getElementById("api-key").value;
-
-        if (!apiKey && envKey !== "REPLACE_WITH_GEMINI_KEY" && envKey !== "") {
-          apiKey = envKey;
-        }
-
-        if (!apiKey) {
-          apiKey = localStorage.getItem("nsct_api_key");
-        }
-
-        // 3. Validation
-        if (!apiKey) {
-          return alert(
-            "System requires Authentication Key. Please enter it or configure Render Environment.",
+        // 2. Validation check for the injected key
+        if (
+          !apiKey ||
+          apiKey === "REPLACE_WITH_GEMINI_KEY" ||
+          apiKey.trim() === ""
+        ) {
+          console.error(
+            "API Key injection failed. Check Vercel Environment Variables.",
           );
+          // Fallback: If injection fails, show the setup screen so you can type it manually
+          document.getElementById("setup-screen").style.display = "block";
+          return;
         }
 
-        // 4. Persistence for future sessions
-        localStorage.setItem("nsct_api_key", apiKey);
-
-        // Proceed with UI changes
-        document.getElementById("setup-screen").classList.add("hidden");
+        // 3. UI Transition
+        document.getElementById("setup-screen").style.display = "none";
         document.getElementById("exam-screen").classList.remove("hidden");
 
+        // 4. Standard Fetching Logic
         for (let model of MODELS) {
           try {
             questions = [];
@@ -369,7 +364,7 @@
           }
         }
 
-        alert("API Connection Failed. Please check your key or internet.");
+        alert("API Connection Failed. Please check your internet connection.");
         location.reload();
       }
 
@@ -604,6 +599,11 @@
           if (timerSeconds <= 0) finishExam();
         }, 1000);
       }
+
+      // Trigger the assessment automatically on page load
+      window.addEventListener("DOMContentLoaded", () => {
+        startIndustrialExam();
+      });
     </script>
   </body>
 </html>
